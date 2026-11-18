@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "tool": {
+    "name": "egress-plane",
+    "version": "0.1.0",
+    "data_digest": "sha256:ee955652f86ffc3fa473a953ca94aedd086743fd28aa64baf43eb14e71bff088",
+    "runtime_range": {
+      "python": "3.8-3.13",
+      "node": "18-22",
+      "rust": "1.97.1",
+      "go": "1.18-1.26"
+    }
+  },
+  "completeness": {
+    "state": "complete",
+    "budget_exceeded": [],
+    "coverage": {
+      "python": {
+        "scanned": 1,
+        "skipped": 0
+      },
+      "javascript": {
+        "scanned": 0,
+        "skipped": 0
+      },
+      "rust": {
+        "scanned": 0,
+        "skipped": 0
+      },
+      "go": {
+        "scanned": 0,
+        "skipped": 0
+      },
+      "unsupported": {
+        "scanned": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "caveats": [
+    {
+      "id": "local-io",
+      "text": "Filesystem reads and writes, FIFO and shared-memory creation, and anonymous pipes are not counted."
+    }
+  ],
+  "sites": [
+    {
+      "id": "f1a3b6e5146f8d9e",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "ApiSearchTool.forward",
+      "bucket": "catalogued",
+      "mechanism": "python:requests.get",
+      "destination": {
+        "kind": "expr",
+        "value": "self.endpoint",
+        "display": "expr:self.endpoint"
+      },
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 317,
+        "column": 20
+      }
+    },
+    {
+      "id": "4972403d567bc8e5",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "HostedSearchTool.forward",
+      "bucket": "catalogued",
+      "mechanism": "python:requests.get",
+      "destination": {
+        "kind": "expr",
+        "value": "base_url",
+        "display": "expr:base_url"
+      },
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 210,
+        "column": 20
+      }
+    },
+    {
+      "id": "088b9aa52204cdd0",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "FetchPageTool.forward",
+      "bucket": "catalogued",
+      "mechanism": "python:requests.get",
+      "destination": {
+        "kind": "param",
+        "value": "1:FetchPageTool.forward",
+        "display": "param:1:FetchPageTool.forward"
+      },
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 528,
+        "column": 24
+      }
+    },
+    {
+      "id": "adfaa0e781ca769a",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "MultiSearchTool.search_alpha",
+      "bucket": "catalogued",
+      "mechanism": "python:requests.get",
+      "destination": {
+        "kind": "literal",
+        "value": "https://search-a.example.test/search",
+        "display": "https://search-a.example.test/search"
+      },
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 438,
+        "column": 20
+      }
+    },
+    {
+      "id": "e0b0c76babfe6a72",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "MultiSearchTool.search_beta",
+      "bucket": "catalogued",
+      "mechanism": "python:requests.get",
+      "destination": {
+        "kind": "literal",
+        "value": "https://search-b.example.test/lite/",
+        "display": "https://search-b.example.test/lite/"
+      },
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 377,
+        "column": 20
+      }
+    },
+    {
+      "id": "178c2d6871a6b0ec",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "MultiSearchTool.search_gamma",
+      "bucket": "catalogued",
+      "mechanism": "python:requests.post",
+      "destination": {
+        "kind": "literal",
+        "value": "https://search-c.example.test/api",
+        "display": "https://search-c.example.test/api"
+      },
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 465,
+        "column": 20
+      }
+    }
+  ],
+  "blind_spots": [
+    {
+      "id": "f4eec97c8aeaa2e6",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "<module>",
+      "kind": "unresolved-module",
+      "whole_file": false,
+      "coverage_gap": false,
+      "construct": ".local_python_executor",
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 21,
+        "column": 5
+      }
+    },
+    {
+      "id": "428ed1f36ac0734e",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "<module>",
+      "kind": "unresolved-module",
+      "whole_file": false,
+      "coverage_gap": false,
+      "construct": ".local_python_executor",
+      "ordinal": 1,
+      "labels": [],
+      "location": {
+        "line": 22,
+        "column": 5
+      }
+    },
+    {
+      "id": "61cf07eed4228ffe",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "<module>",
+      "kind": "unresolved-module",
+      "whole_file": false,
+      "coverage_gap": false,
+      "construct": ".local_python_executor",
+      "ordinal": 2,
+      "labels": [],
+      "location": {
+        "line": 23,
+        "column": 5
+      }
+    },
+    {
+      "id": "840456cb2584b7e6",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "<module>",
+      "kind": "unresolved-module",
+      "whole_file": false,
+      "coverage_gap": false,
+      "construct": ".local_python_executor",
+      "ordinal": 3,
+      "labels": [],
+      "location": {
+        "line": 24,
+        "column": 5
+      }
+    },
+    {
+      "id": "4332e955bd4e4bcf",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "<module>",
+      "kind": "unresolved-module",
+      "whole_file": false,
+      "coverage_gap": false,
+      "construct": ".tools",
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 26,
+        "column": 20
+      }
+    },
+    {
+      "id": "36987e6db510544b",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "<module>",
+      "kind": "unresolved-module",
+      "whole_file": false,
+      "coverage_gap": false,
+      "construct": ".tools",
+      "ordinal": 1,
+      "labels": [],
+      "location": {
+        "line": 26,
+        "column": 34
+      }
+    },
+    {
+      "id": "7af2e8e29f191f9b",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "SpeechToTextTool.__new__",
+      "kind": "introspection",
+      "whole_file": false,
+      "coverage_gap": false,
+      "construct": "super().__new__",
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 663,
+        "column": 16
+      }
+    },
+    {
+      "id": "5ae01f0b5efc459b",
+      "language": "python",
+      "file": "case/src/agent_tools/web_tools.py",
+      "symbol": "SpeechToTextTool.encode",
+      "kind": "unresolved-module",
+      "whole_file": false,
+      "coverage_gap": false,
+      "construct": ".agent_types",
+      "ordinal": 0,
+      "labels": [],
+      "location": {
+        "line": 666,
+        "column": 34
+      }
+    }
+  ],
+  "unscanned_dependencies": [
+    {
+      "id": "5baaac477f465b07",
+      "language": "python",
+      "package": "searchlib",
+      "files": [
+        "case/src/agent_tools/web_tools.py"
+      ]
+    },
+    {
+      "id": "ac70befd982132f2",
+      "language": "python",
+      "package": "htmlconv",
+      "files": [
+        "case/src/agent_tools/web_tools.py"
+      ]
+    }
+  ],
+  "excluded": []
+}

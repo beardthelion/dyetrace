@@ -1,0 +1,120 @@
+{
+  "checklist": [
+    {
+      "class": "G9",
+      "line": 223,
+      "message": "G9 checklist candidate: registered entry point. Verify every network sink reachable from this entry point goes through a complete guard, and that no second entry point reaches the same sinks unguarded.",
+      "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py",
+      "test_path": false,
+      "verify": "guard coverage across entry points: every path from this entry point to a network sink shares the same complete guard"
+    }
+  ],
+  "coverage": {
+    "checklist_candidates": 4,
+    "entry_candidates": 6,
+    "excluded_dirs": [],
+    "files_scanned": {
+      "python": 1,
+      "total": 1
+    },
+    "parse_failures": [],
+    "sinks_found": 4,
+    "sinks_outside_recognized_entries": [],
+    "sites_by_resolution": {
+      "deterministic": 2,
+      "source_no_sink": 4
+    },
+    "target_ignore_files": [],
+    "verdict": "surface_detected"
+  },
+  "findings": [
+    {
+      "class_locations": {
+        "G8": [
+          {
+            "col": 56,
+            "line": 96,
+            "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+          }
+        ]
+      },
+      "classes": [
+        "G8"
+      ],
+      "end_line": 108,
+      "guard_locations": [
+        {
+          "col": 9,
+          "line": 87,
+          "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+        },
+        {
+          "col": 5,
+          "line": 99,
+          "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+        }
+      ],
+      "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py",
+      "resolution": "deterministic",
+      "sinks": [
+        {
+          "col": 16,
+          "line": 75,
+          "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+        },
+        {
+          "col": 30,
+          "line": 77,
+          "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+        }
+      ],
+      "site": "async def check_may_autonomously_fetch_url(url: str, user_agent: str, proxy_url:",
+      "start_line": 66,
+      "test_path": false
+    },
+    {
+      "class_locations": {
+        "G8": [
+          {
+            "col": 53,
+            "line": 139,
+            "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+          }
+        ]
+      },
+      "classes": [
+        "G8"
+      ],
+      "end_line": 148,
+      "guard_locations": [
+        {
+          "col": 9,
+          "line": 129,
+          "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+        }
+      ],
+      "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py",
+      "resolution": "deterministic",
+      "sinks": [
+        {
+          "col": 16,
+          "line": 119,
+          "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+        },
+        {
+          "col": 30,
+          "line": 121,
+          "path": "g0-mcp-server-fetch/vulnerable/src/fetch/src/mcp_server_fetch/server.py"
+        }
+      ],
+      "site": "async def fetch_url(",
+      "start_line": 111,
+      "test_path": false
+    }
+  ],
+  "ruleset_version": "0.1.0",
+  "schema_version": "ssrf-guard-audit/v1",
+  "semgrep_version": "1.177.0",
+  "target": "g0-mcp-server-fetch",
+  "taxonomy_version": "g0-g10/v1"
+}
