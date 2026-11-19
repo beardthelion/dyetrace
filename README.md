@@ -462,3 +462,7 @@ Design notes: [SPEC.md](SPEC.md) (black-box mode) and [SPEC-OSS.md](SPEC-OSS.md)
 - [ssrf-guard-audit](https://github.com/beardthelion/ssrf-guard-audit) and [mcp-ssrf-audit](https://github.com/beardthelion/mcp-ssrf-audit): static SSRF scans whose output egress mode can prove at runtime
 - [egress-plane](https://github.com/beardthelion/egress-plane): outbound-call inventory, also accepted as egress-mode candidates
 - [autocatalytic-harness](https://github.com/beardthelion/autocatalytic-harness): the audit harness that uses dyetrace as a runtime proof step
+
+## License
+
+MIT. See [LICENSE](LICENSE).
