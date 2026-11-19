@@ -1,21 +1,98 @@
 # dyetrace
 
-Black-box dataflow tracer for authorized bug-bounty testing.
+Black-box dataflow tracer for authorized security testing. It plants unique, signed tracer strings into the inputs of a recorded web session, replays the session, and reports every place a tracer shows up again. A tracer that resurfaces somewhere it should not, such as another user's view or an unescaped HTML context, is the finding.
 
-Dye injects a unique, self-identifying tracer into every observed input of a
-recorded authenticated session, re-drives the recorded read surfaces, and
-watches where each tracer resurfaces. A tracer that surfaces in a context it
-should never reach is a leak, and that leak is the finding.
+A second mode, `dyetrace egress`, proves server-side request forgery in MCP servers: it calls a URL-taking tool with a tracer URL that points at a listener you control and records whether the server fetched it.
 
-See `SPEC.md` for the design. v1 is HTTP-only.
+Only use it against systems you are authorized to test.
 
-## Status
+## Why
 
-Early development. HTTP-only core.
+Source-level taint tools cannot follow data through an application you do not have the code for, and stored, second-order and cross-identity leaks are the cases static scans miss. dyetrace treats the app as a closed system: put a dye in every input, drive the app, and watch where the dye comes out. Each tracer is HMAC-signed per run (`DYE-<run_id>-<entry_id>-<nonce>-<mac>`), so a hit is authenticated rather than guessed, and the `entry_id` names the request and field it came from.
+
+## Modes
+
+| Mode | Input | Question it answers |
+|---|---|---|
+| black-box (default) | a recorded session JSON | Where does each input resurface, and does it come back unescaped or under another identity? |
+| OSS (`--candidates`) | session JSON plus static candidates | Does this specific static finding actually flow at runtime? |
+| egress (`dyetrace egress`) | an MCP server plus SSRF candidates | Does this URL-taking tool make the server fetch an attacker-chosen URL? |
+
+## Install
+
+Python 3.10 or newer. The core depends only on `httpx`; egress mode needs the `mcp` extra.
+
+```bash
+git clone https://github.com/beardthelion/dyetrace
+cd dyetrace
+pip install -e .            # black-box and OSS modes
+pip install -e '.[mcp]'     # adds egress mode
+pip install -e '.[dev]'     # adds pytest
+dyetrace --help
+dyetrace egress --help
+```
+
+## Black-box mode
+
+### Session file
+
+A session is the recorded, authenticated traffic to replay:
+
+```json
+{
+  "version": "1",
+  "cookies": {},
+  "auth_headers": {"authorization": "Bearer ..."},
+  "base_url": "https://app.example.com",
+  "recorded_requests": [
+    {"method": "GET", "url": "https://app.example.com/set?name=bob"},
+    {"method": "GET", "url": "https://app.example.com/profile"}
+  ]
+}
+```
+
+Requests can also carry `headers` and a `body` (form, JSON or multipart). `tools/session_from_har.py` builds this file from a HAR capture (see below). Cookie and auth header values are masked as `***` in all output.
+
+### Run
+
+```bash
+dyetrace --session session.json --host app.example.com
+dyetrace --session session.json --second-session admin.json --host app.example.com --output html --out report.html
+```
+
+The tool plants a tracer into every writable leaf (query and form fields, JSON values, path segments, custom headers, multipart values and filenames), in a raw form and in HTML-breaking, JS-string-breaking and attribute-breaking variants. It then re-drives the recorded read requests, under the second identity too when one is given, and checks every response body and header value.
+
+Safety defaults:
+
+- Only the exact `--host` is contacted. Loopback targets need `--allow-loopback` and plain HTTP needs `--allow-cleartext`; private, link-local and metadata addresses are always refused.
+- Recorded requests with any method other than GET or HEAD are not planted unless you pass `--confirm-mutating`, and are never re-driven as reads. `--post-read INDEX` marks a recorded POST as a read surface, and `--exclude INDEX` skips a request.
+- Requests are rate-limited (`--rate`, default 2 per second). `--raw-only` plants only the raw tracer.
+
+### Output
+
+`--output terminal` (default), `html` or `json`. Each report has:
+
+- a flow table, one row per resurfacing: entry, source request and field, sink URL, identity, encoding variant, whether it crossed identities, severity (`tracked`, `injection-candidate`, `cross-context`), and the matched snippet
+- a findings list of the `injection-candidate` and `cross-context` rows with the request pair that reproduces them
+- a summary line with four separate outcome counts: `resurfaced`, `never` (never seen again), `noise` (a tracer-shaped string that failed signature checks) and `plant_rejected` (the plant itself failed, so silence means nothing)
+
+Example against a local page that stores and echoes a `name` query value without escaping:
+
+```
+$ dyetrace --session session.json --host 127.0.0.1 --allow-loopback --allow-cleartext
+dyetrace flow table
+entry_id | source | sink_url | sink_identity | encoding | cross_context | severity | snippet
+0 | GET http://127.0.0.1:8765/set?name=*** [query:name] | http://127.0.0.1:8765/set?name=*** | 1 | raw | False | tracked | DYE-f528...
+0 | GET http://127.0.0.1:8765/set?name=*** [query:name] | http://127.0.0.1:8765/set?name=*** | 1 | html | False | injection-candidate | "><dye t=DYE-f528...>
+...
+summary: verified leaks found: resurfaced=1, universe=3, never=2, noise=0, plant_rejected=0
+```
+
+Exit codes: `0` when the run completed (with or without hits), `2` when it stopped fail-closed, for example on an invalid session, a forbidden host, or a session with nothing to plant. Read the summary line, not the exit code, to tell a clean run from a stop.
 
 ## OSS mode (dye-OSS)
 
-`--candidates` consumes a jevsec `candidates.json` and turns each static
+`--candidates` consumes a `candidates.json` from jevsec, a static taint scanner that is not public yet, and turns each static
 candidate into a runtime verdict: the tracer is planted only at the requests
 the candidate's source maps to, and a hit at the predicted surface proves the
 flow.
@@ -101,10 +178,11 @@ python tools/session_from_har.py capture.har -o session.json
 ### The full loop
 
 ```bash
-# jevsec prints its candidates path; feed it straight to dye-OSS
-bun src/cli.ts /path/to/target            # in the jevsec repo
+# a jevsec run prints its candidates path; feed it straight to dye-OSS
 python tools/session_from_har.py capture.har -o session.json
-dyetrace --session session.json --host app.example.com   --candidates <runs>/candidates.json --binds binds.json   --route-prefix /api --output json --out verdicts.json
+dyetrace --session session.json --host app.example.com \
+  --candidates <runs>/candidates.json --binds binds.json \
+  --route-prefix /api --output json --out verdicts.json
 # gate submit only on verdict == "PROVEN"
 ```
 
@@ -360,3 +438,27 @@ Named limits:
   helper; treat the HTML and JSON surfaces as untrusted input to whatever reads
   them next.
 - Only `http` is exercised. Tools that require `https` are untested.
+
+## Tests
+
+```bash
+pip install -e '.[dev]'
+pytest -q
+```
+
+The suite includes end-to-end runs against local fixture servers, including an MCP fixture server for egress mode.
+
+## Limitations
+
+- HTTP only. No WebSocket, gRPC, email or PDF sinks are watched; only response bodies and header values of replayed requests.
+- A tracer that lands in logs, queues or out-of-band channels is not seen.
+- Coverage is limited to what the recorded session exercises. Pages the session never visits are not checked.
+- Black-box mode does not crawl or discover new endpoints.
+
+Design notes: [SPEC.md](SPEC.md) (black-box mode) and [SPEC-OSS.md](SPEC-OSS.md) (candidate-driven mode).
+
+## Related tools
+
+- [ssrf-guard-audit](https://github.com/beardthelion/ssrf-guard-audit) and [mcp-ssrf-audit](https://github.com/beardthelion/mcp-ssrf-audit): static SSRF scans whose output egress mode can prove at runtime
+- [egress-plane](https://github.com/beardthelion/egress-plane): outbound-call inventory, also accepted as egress-mode candidates
+- [autocatalytic-harness](https://github.com/beardthelion/autocatalytic-harness): the audit harness that uses dyetrace as a runtime proof step
